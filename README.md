@@ -1,5 +1,5 @@
 # Py-neTime
-Python script to set your pinetime (with infinitime) to the current time
+Python script to set your pinetime (with infinitime) to the current time, accurate to the nearest 1/256th of a second
 
 big thanks to https://github.com/getsenic/gatt-python
 
