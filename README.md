@@ -1,4 +1,4 @@
-![alt text](https://ironrobin.net/clover/droppy/$/PZvVn)
+
 
 # Py-neTime
 Python script to set your pinetime (with infinitime) to the current time, accurate to the nearest 1/256th of a second
@@ -12,3 +12,5 @@ big thanks to https://github.com/getsenic/gatt-python
 
 # To Run
 python3 sync-pinetime.py PINETIME-MAC-ADDRESS (E.g., EF:C0:ED:C1:68:52)
+
+![alt text](https://ironrobin.net/clover/droppy/$/PZvVn)
