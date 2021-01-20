@@ -1,4 +1,4 @@
-![alt text](https://ironrobin.net/clover/droppy/#/PineTime/pynetime.jpeg)
+![alt text](https://ironrobin.net/clover/droppy/$/PZvVn)
 
 # Py-neTime
 Python script to set your pinetime (with infinitime) to the current time, accurate to the nearest 1/256th of a second
