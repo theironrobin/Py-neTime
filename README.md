@@ -8,3 +8,5 @@ big thanks to https://github.com/getsenic/gatt-python
    - sudo pip3 install datetime
    - sudo apt-get install python3-dbus
 
+# To Run
+python3 sync-pinetime.py PINETIME-MAC-ADDRESS (E.g., EF:C0:ED:C1:68:52)
