@@ -122,7 +122,7 @@ class AnyDevice(gatt.Device):
                 if uuid == "00002a2b-0000-1000-8000-00805f9b34fb":
                     print("Current Time")
                     value = self.get_current_time()
-                    if False:
+                    if action == "set_time":
                         characteristic.write_value(value)
                     else:
                         #print("CHAR", dir(characteristic))
@@ -143,6 +143,10 @@ class AnyDevice(gatt.Device):
                     byte_values = [int(byte) for byte in dbus_array]
                     step_count = int.from_bytes(byte_values, byteorder='little')
                     print("STEP COUNT", step_count)
+                elif uuid == "00002a46-0000-1000-8000-00805f9b34fb": # New notification
+                    alert_string = b"\x00\x01\x00Hello PineTime World!\x00ou are the future."
+                    characteristic.write_value(alert_string)
+
 
                 elif uuid in self.uuid_map:
                     print(self.uuid_map[uuid], uuid, "=", characteristic.read_value())
@@ -154,6 +158,7 @@ class AnyDevice(gatt.Device):
                     print("[%s]    Characteristic [%s]" % (self.mac_address, characteristic.uuid))
 
         #print("uuids", "\n".join(uuids.keys()))
+
         if one_run:
             self.manager.stop()
 
