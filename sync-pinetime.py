@@ -102,6 +102,7 @@ class AnyDevice(gatt.Device):
     def disconnect_succeeded(self):
         super().disconnect_succeeded()
         print("[%s] Disconnected" % (self.mac_address))
+        #self.manager.stop()
 
     def bytes_to_int(self, in_list):
         byte_values = [int(byte) for byte in in_list]
