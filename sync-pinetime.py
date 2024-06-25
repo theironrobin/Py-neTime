@@ -1,10 +1,12 @@
 import datetime
+# Bluetooth GATT SDK for Python -- https://github.com/getsenic/gatt-python
 import gatt
 from argparse import ArgumentParser
 
 
 class AnyDevice(gatt.Device):
     verbose = False
+
     uuid_map = {
         "00002a2b-0000-1000-8000-00805f9b34fb": "Time",
         "00002a26-0000-1000-8000-00805f9b34fb": "Firmware Version",
@@ -20,8 +22,11 @@ class AnyDevice(gatt.Device):
         # https://codeberg.org/prograde/InfiniTime/src/branch/main/doc/MotionService.md
         "00030002-78fc-48fe-8e23-433b3a1942d0": "Raw motion values",
         "00030001-78fc-48fe-8e23-433b3a1942d0": "Step Count",
-
     }
+
+    def __init__(self,  *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("kwargs", kwargs)
 
     def get_current_time(self):
         now = datetime.datetime.now()
@@ -98,7 +103,7 @@ class AnyDevice(gatt.Device):
         super().disconnect_succeeded()
         print("[%s] Disconnected" % (self.mac_address))
 
-    def services_resolved(self, action="set_time"):
+    def services_resolved(self, action=None, one_run=True):
         super().services_resolved()
 
         print("[%s] Resolved services" % (self.mac_address))
@@ -141,14 +146,16 @@ class AnyDevice(gatt.Device):
                     print("[%s]    Characteristic [%s]" % (self.mac_address, characteristic.uuid))
 
         #print("uuids", "\n".join(uuids.keys()))
+        if one_run:
+            self.manager.stop()
 
+# Get arguments passed at the command line
 arg_parser = ArgumentParser(description="GATT Connect")
 arg_parser.add_argument('mac_address', help="MAC address of device to connect")
 args = arg_parser.parse_args()
 mac_address = args.mac_address
 
 print("Connecting to device %s..." % (mac_address))
-
 manager = gatt.DeviceManager(adapter_name='hci0')
 
 device = AnyDevice(manager=manager, mac_address=mac_address)
