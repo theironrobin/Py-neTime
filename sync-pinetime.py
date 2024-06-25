@@ -26,7 +26,7 @@ class AnyDevice(gatt.Device):
 
     def __init__(self,  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print("kwargs", kwargs)
+        #print("kwargs", kwargs)
 
     def get_current_time(self):
         now = datetime.datetime.now()
@@ -103,13 +103,20 @@ class AnyDevice(gatt.Device):
         super().disconnect_succeeded()
         print("[%s] Disconnected" % (self.mac_address))
 
+    def bytes_to_int(self, in_list):
+        byte_values = [int(byte) for byte in in_list]
+        val = int.from_bytes(byte_values, byteorder='little')
+        return val
+
+
     def services_resolved(self, action=None, one_run=True):
         super().services_resolved()
 
         print("[%s] Resolved services" % (self.mac_address))
         uuids = {}
         for service in self.services:
-            print("[%s]  Service [%s]" % (self.mac_address, service.uuid))
+            if True or self.verbose:
+                print("[%s]  Service [%s]" % (self.mac_address, service.uuid))
             for characteristic in service.characteristics:
                 uuid = str(characteristic.uuid)
                 if uuid == "00002a2b-0000-1000-8000-00805f9b34fb":
@@ -120,13 +127,14 @@ class AnyDevice(gatt.Device):
                     else:
                         #print("CHAR", dir(characteristic))
                         val = characteristic.read_value()
+                        year = self.bytes_to_int([val[0], val[1]])
                         month = int(val[2])
                         day = int(val[3])
                         hour = int(val[4])
                         minute = int(val[5])
                         second = int(val[6])
 
-                        print("TIME", "%d/%d %d:%d:%d" % (month, day, hour, minute,  second))
+                        print("TIME", "%d/%d/%d %d:%d:%d" % (month, day, year, hour, minute,  second))
                         if False:
                             for one_val in val:
                                 print(int(one_val))
