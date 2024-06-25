@@ -62,9 +62,28 @@ def get_current_time():
     hex_answer = hex_year_a + " " + hex_year_b + " " + hex_month + " " + hex_day + " " + hex_hour + " " + hex_minute + " " + hex_second + " " + hex_weekday + " " + hex_fractions
     print(hex_answer)
     return bytearray.fromhex(hex_answer)
-    
+
 
 class AnyDevice(gatt.Device):
+    verbose = False
+    uuid_map = {
+        "00002a2b-0000-1000-8000-00805f9b34fb": "Time",
+        "00002a26-0000-1000-8000-00805f9b34fb": "Firmware Version",
+        "00002a19-0000-1000-8000-00805f9b34fb": "Battery Level",
+        "00002a37-0000-1000-8000-00805f9b34fb": "Heart Rate",
+
+        "00001534-1212-efde-1523-785feabcd123": "DFU Version",
+        "00002a25-0000-1000-8000-00805f9b34fb": "Serial Number",
+        "00002a28-0000-1000-8000-00805f9b34fb": "Software Revision",
+        "00002a24-0000-1000-8000-00805f9b34fb": "Model Number",
+        "00002a27-0000-1000-8000-00805f9b34fb": "Hardware Revision",
+        "00002a29-0000-1000-8000-00805f9b34fb": "Manufacturer Name",
+        # https://codeberg.org/prograde/InfiniTime/src/branch/main/doc/MotionService.md
+        "00030002-78fc-48fe-8e23-433b3a1942d0": "Raw motion values",
+        "00030001-78fc-48fe-8e23-433b3a1942d0": "Step Count",
+
+    }
+
     def connect_succeeded(self):
         super().connect_succeeded()
         print("[%s] Connected" % (self.mac_address))
@@ -77,29 +96,60 @@ class AnyDevice(gatt.Device):
         super().disconnect_succeeded()
         print("[%s] Disconnected" % (self.mac_address))
 
-    def services_resolved(self):
+    def services_resolved(self, action="set_time"):
         super().services_resolved()
 
         print("[%s] Resolved services" % (self.mac_address))
+        uuids = {}
         for service in self.services:
             print("[%s]  Service [%s]" % (self.mac_address, service.uuid))
             for characteristic in service.characteristics:
-                if characteristic.uuid == "00002a2b-0000-1000-8000-00805f9b34fb":
+                uuid = str(characteristic.uuid)
+                if uuid == "00002a2b-0000-1000-8000-00805f9b34fb":
                     print("Current Time")
                     value = get_current_time()
-                    characteristic.write_value(value)
-                print("[%s]    Characteristic [%s]" % (self.mac_address, characteristic.uuid))
+                    if False:
+                        characteristic.write_value(value)
+                    else:
+                        #print("CHAR", dir(characteristic))
+                        val = characteristic.read_value()
+                        month = int(val[2])
+                        day = int(val[3])
+                        hour = int(val[4])
+                        minute = int(val[5])
+                        second = int(val[6])
 
+                        print("TIME", "%d/%d %d:%d:%d" % (month, day, hour, minute,  second))
+                        if False:
+                            for one_val in val:
+                                print(int(one_val))
+                elif uuid == "00030001-78fc-48fe-8e23-433b3a1942d0": # Step count
+                    dbus_array = characteristic.read_value()
+                    byte_values = [int(byte) for byte in dbus_array]
+                    step_count = int.from_bytes(byte_values, byteorder='little')
+                    print("STEP COUNT", step_count)
+
+                elif uuid in self.uuid_map:
+                    print(self.uuid_map[uuid], uuid, "=", characteristic.read_value())
+                else:
+                    pass
+                    #print(uuid, "=", characteristic.read_value())
+                uuids[uuid] = True
+                if self.verbose:
+                    print("[%s]    Characteristic [%s]" % (self.mac_address, characteristic.uuid))
+
+        #print("uuids", "\n".join(uuids.keys()))
 
 arg_parser = ArgumentParser(description="GATT Connect")
 arg_parser.add_argument('mac_address', help="MAC address of device to connect")
 args = arg_parser.parse_args()
+mac_address = args.mac_address
 
-print("Connecting...")
+print("Connecting to device %s..." % (mac_address))
 
 manager = gatt.DeviceManager(adapter_name='hci0')
 
-device = AnyDevice(manager=manager, mac_address=args.mac_address)
+device = AnyDevice(manager=manager, mac_address=mac_address)
 device.connect()
 
 manager.run()
