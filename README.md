@@ -42,7 +42,7 @@ If your device is already paired, you should see the device with your mac addres
 [NEW] Device EF:C0:ED:C1:68:52 InfiniTime
 ```
 
-You can list all of the available bluetoothctl commands by running `help` and you will see the list, scan, and pair commands.
+You can list all of the available bluetoothctl commands by running `help` and you will see the `list`, `scan`, and `pair` commands.
 
 Once you have paired your device and recorded the mac address, run this command to set the time on the PineTime:
 
@@ -52,11 +52,11 @@ python3 sync-pinetime.py PINETIME-MAC-ADDRESS (E.g., EF:C0:ED:C1:68:52)
 
 # Useful Links
 
-  - https://github.com/InfiniTimeOrg/InfiniTime/blob/main/doc/ble.md#heart-rate
-  - https://dbus.freedesktop.org/doc/dbus-python/dbus.html
-  - https://bluedot.readthedocs.io/en/latest/pairpipi.html#using-the-command-line
   - https://wiki.pine64.org/wiki/PineTime
   - Bluetooth GATT SDK for Python -- https://github.com/getsenic/gatt-python
+  - InfiniTime docs --- https://github.com/InfiniTimeOrg/InfiniTime/blob/main/doc/ble.md#heart-rate
+  - dbus docs -- https://dbus.freedesktop.org/doc/dbus-python/dbus.html
+  - https://bluedot.readthedocs.io/en/latest/pairpipi.html#using-the-command-line
   - https://codeberg.org/prograde/InfiniTime/src/branch/main/doc/MotionService.md
 
 
