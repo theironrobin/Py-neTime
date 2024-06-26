@@ -1,11 +1,10 @@
 import datetime
-# Bluetooth GATT SDK for Python -- https://github.com/getsenic/gatt-python
 import gatt
 from argparse import ArgumentParser
 
 
-class AnyDevice(gatt.Device):
-    verbose = False
+class SyncPineTime(gatt.Device):
+    verbose = True
 
     uuid_map = {
         "00002a2b-0000-1000-8000-00805f9b34fb": "Time",
@@ -19,13 +18,13 @@ class AnyDevice(gatt.Device):
         "00002a24-0000-1000-8000-00805f9b34fb": "Model Number",
         "00002a27-0000-1000-8000-00805f9b34fb": "Hardware Revision",
         "00002a29-0000-1000-8000-00805f9b34fb": "Manufacturer Name",
-        # https://codeberg.org/prograde/InfiniTime/src/branch/main/doc/MotionService.md
         "00030002-78fc-48fe-8e23-433b3a1942d0": "Raw motion values",
         "00030001-78fc-48fe-8e23-433b3a1942d0": "Step Count",
     }
 
-    def __init__(self,  *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self,  *args, action=None, **kwargs):
+        super().__init__(*args,  **kwargs)
+        self.action = action
         #print("kwargs", kwargs)
 
     def get_current_time(self):
@@ -102,7 +101,7 @@ class AnyDevice(gatt.Device):
     def disconnect_succeeded(self):
         super().disconnect_succeeded()
         print("[%s] Disconnected" % (self.mac_address))
-        #self.manager.stop()
+        self.manager.stop()
 
     def bytes_to_int(self, in_list):
         byte_values = [int(byte) for byte in in_list]
@@ -113,17 +112,17 @@ class AnyDevice(gatt.Device):
     def services_resolved(self, action=None, one_run=True):
         super().services_resolved()
 
-        print("[%s] Resolved services" % (self.mac_address))
+        print("[%s] Resolved services count: %d" % (self.mac_address, len(self.services)))
         uuids = {}
         for service in self.services:
-            if True or self.verbose:
+            if self.verbose:
                 print("[%s]  Service [%s]" % (self.mac_address, service.uuid))
             for characteristic in service.characteristics:
                 uuid = str(characteristic.uuid)
                 if uuid == "00002a2b-0000-1000-8000-00805f9b34fb":
                     print("Current Time")
                     value = self.get_current_time()
-                    if action == "set_time":
+                    if self.action == "set_time":
                         characteristic.write_value(value)
                     else:
                         #print("CHAR", dir(characteristic))
@@ -144,10 +143,10 @@ class AnyDevice(gatt.Device):
                     byte_values = [int(byte) for byte in dbus_array]
                     step_count = int.from_bytes(byte_values, byteorder='little')
                     print("STEP COUNT", step_count)
-                elif uuid == "00002a46-0000-1000-8000-00805f9b34fb": # New notification
+                elif self.action == "send_notification" and uuid == "00002a46-0000-1000-8000-00805f9b34fb": # New notification
                     alert_string = b"\x00\x01\x00Hello PineTime World!\x00ou are the future."
+                    print("Sending notification: ", alert_string)
                     characteristic.write_value(alert_string)
-
 
                 elif uuid in self.uuid_map:
                     print(self.uuid_map[uuid], uuid, "=", characteristic.read_value())
@@ -158,23 +157,26 @@ class AnyDevice(gatt.Device):
                 if self.verbose:
                     print("[%s]    Characteristic [%s]" % (self.mac_address, characteristic.uuid))
 
+        print("Done with services.")
         #print("uuids", "\n".join(uuids.keys()))
 
         if one_run:
             self.manager.stop()
 
-# Get arguments passed at the command line
-arg_parser = ArgumentParser(description="GATT Connect")
-arg_parser.add_argument('mac_address', help="MAC address of device to connect")
-args = arg_parser.parse_args()
-mac_address = args.mac_address
+if __name__ == "__main__":
+    # Get arguments passed at the command line
+    arg_parser = ArgumentParser(description="GATT Connect")
+    arg_parser.add_argument('mac_address', help="MAC address of device to connect")
+    args = arg_parser.parse_args()
+    mac_address = args.mac_address
 
-print("Connecting to device %s..." % (mac_address))
-manager = gatt.DeviceManager(adapter_name='hci0')
+    print("Connecting to device %s..." % (mac_address))
+    manager = gatt.DeviceManager(adapter_name='hci0')
 
-device = AnyDevice(manager=manager, mac_address=mac_address)
-device.connect()
+    device = SyncPineTime(manager=manager, mac_address=mac_address, action="set_time")
+    #device = SyncPineTime(manager=manager, mac_address=mac_address, action="send_notification")
+    device.connect()
 
-manager.run()
+    manager.run()
 
 
