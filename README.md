@@ -28,13 +28,23 @@ sudo apt-get install python3-dbus
 
 # To Run
 
-Pair your PineTime device to your machine:
+Pair your PineTime device to your machine with the `bluetoothctl` tool.
+
+Run at the console:
 
 ```console
 bluetoothctl
 ```
 
-Then set the time on the PineTime:
+If your device is already paired, you should see the device with your mac address like this:
+
+```console
+[NEW] Device EF:C0:ED:C1:68:52 InfiniTime
+```
+
+You can list all of the available bluetoothctl commands by running `help` and you will see the list, scan, and pair commands.
+
+Once you have paired your device and recorded the mac address, run this command to set the time on the PineTime:
 
 ```console
 python3 sync-pinetime.py PINETIME-MAC-ADDRESS (E.g., EF:C0:ED:C1:68:52)
