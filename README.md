@@ -11,9 +11,20 @@ Other features demonstrated:
 
 big thanks to https://github.com/getsenic/gatt-python
 
-# dependancy list
-   - sudo pip3 install -r requirements.txt
-   - sudo apt-get install python3-dbus
+# Dependancy List
+
+Install Python requirements:
+
+```console
+sudo pip3 install -r requirements.txt
+```
+
+Install system requirements:
+
+```console
+sudo apt-get install python3-dbus
+```
+
 
 # To Run
 
